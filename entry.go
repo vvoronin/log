@@ -201,6 +201,11 @@ func (e *Entry) WithFields(fields ...Field) LeveledLogger {
 	e.Fields = append(e.Fields, fields...)
 	return e
 }
+// WithFields adds the provided fieldsto the current entry
+func (e *Entry) WithError(err error) LeveledLogger {
+	e.Fields = append(e.Fields, F(`err`,err))
+	return e
+}
 
 // StackTrace adds a field with stack trace to the current log Entry.
 func (e *Entry) StackTrace() LeveledLogger {
