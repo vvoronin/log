@@ -251,6 +251,9 @@ func (l *logger) F(key string, value interface{}) Field {
 func (l *logger) WithFields(fields ...Field) LeveledLogger {
 	return newEntry(InfoLevel, "", fields, skipLevel)
 }
+func (l *logger) WithError(err error) LeveledLogger {
+	return newEntry(InfoLevel, "", F(`err`,err), skipLevel)
+}
 
 // StackTrace creates a new log Entry with pre-populated field with stack trace.
 func (l *logger) StackTrace() LeveledLogger {
