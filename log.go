@@ -300,12 +300,19 @@ func (l *logger) HandleEntry(e *Entry) {
 		e.wg.Wait()
 	}
 
-	// reclaim entry + fields
-	for _, f := range e.Fields {
-		l.fieldPool.Put(f)
-	}
+	// due to `if e.Line == 0 && l.callerInfoLevels[e.Level]` (see before)
+	// often wrong line appears at log output
+	// so, let's set it to 0 force
+	e.Line = 0
 
-	l.entryPool.Put(e)
+	if(!e.Persistent) {
+		// reclaim entry + fields
+		for _, f := range e.Fields {
+			l.fieldPool.Put(f)
+		}
+
+		l.entryPool.Put(e)
+	}
 }
 
 // RegisterHandler adds a new Log Handler and specifies what log levels
@@ -372,4 +379,30 @@ func (l *logger) HasHandlers() bool {
 
 func (l *logger) getApplicationID() string {
 	return l.appID
+}
+
+// To use like
+// logger := log.CloneWithFields(field1, field2, field3) - has to be a non-wastable entry
+// logger.Info ("message1") - must send the entry to all its chanels and wait for result, but must not to put entry back to logger's EntryPool
+// logger.WithFields(field4, field5) for Entry just add specified fields; to manipulate entry's fields use slice operations
+// logger.Info(message2) see before
+// log. ReleaseClone(logger) put used entry back to Logger's EntryPool releasing also fields
+// Create new `persistent` entry with specified fields
+func (l *logger) CloneWithFields(fields ...Field) *Entry {
+	entry := newEntry(InfoLevel, "", fields, skipLevel)
+	entry.Persistent = true
+
+	return entry
+}
+
+// Release `persistent` entry
+func (l *logger) ReleaseClone(entry *Entry) {
+	entry.Line = 0
+	entry.Persistent = false;
+	// reclaim entry + fields
+	for _, f := range entry.Fields {
+		l.fieldPool.Put(f)
+	}
+
+	l.entryPool.Put(entry)
 }

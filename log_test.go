@@ -394,6 +394,88 @@ func TestFatal(t *testing.T) {
 	}
 }
 
+func TestPersistent(t *testing.T) {
+
+	Logger.SetApplicationID("app-log")
+
+	// Resetting pool to ensure no Entries exist before setting the Application ID
+	Logger.entryPool = &sync.Pool{New: func() interface{} {
+		return &Entry{
+			wg:            new(sync.WaitGroup),
+			ApplicationID: Logger.getApplicationID(),
+		}
+	}}
+
+	buff := new(bytes.Buffer)
+	Logger.SetCallerInfoLevels(AllLevels...)
+	Logger.SetCallerSkipDiff(0)
+
+	th := &testHandler{
+		writer: buff,
+	}
+
+	Logger.RegisterHandler(th, AllLevels...)
+
+	buff.Reset()
+	e := Logger.CloneWithFields(Logger.F("field1Key", "field1Value"), Logger.F("field2Key", "field2Value"))
+	//_, file, line, _ := runtime.Caller(5)
+	e.Info("Info message 1")
+	expected := fmt.Sprint("INFO log_test.go:422 Info message 1 field1Key=field1Value field2Key=field2Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Persistent Entry to print fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
+	e.WithFields(Logger.F("field3Key", "field3Value"))
+	e.Info("Info message 2")
+	expected = fmt.Sprint("INFO log_test.go:430 Info message 2 field1Key=field1Value field2Key=field2Value field3Key=field3Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Persistent Entry to store fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
+	ee := Logger.WithFields(Logger.F("k1", "v1"))
+	ee.Info(("Info message from ephemer entry"))
+	expected = fmt.Sprint("INFO log_test.go:438 Info message from ephemer entry k1=v1\n")
+	if buff.String() != expected {
+		t.Errorf("test Persistent Entry ephemer entry: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
+	e.WithFields(Logger.F("field4Key", "field4Value"))
+	e.Info("Info message 3")
+	expected = fmt.Sprint("INFO log_test.go:446 Info message 3 field1Key=field1Value field2Key=field2Value field3Key=field3Value field4Key=field4Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Persistent Entry to do not loose: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	Logger.ReleaseClone(e);
+
+	buff.Reset()
+	ee = Logger.WithFields(Logger.F("k1", "v1"))
+	ee.Info(("Info message2 from ephemer entry"))
+	expected = fmt.Sprint("INFO log_test.go:456 Info message2 from ephemer entry k1=v1\n")
+	if buff.String() != expected {
+		t.Errorf("test Persistent Entry ephemer entry: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
+	ee = Logger.WithFields(Logger.F("k1", "v1"), Logger.F("k1", "v1"), Logger.F("k1", "v1"), Logger.F("k1", "v1"), Logger.F("k1", "v1"), Logger.F("k1", "v1"))
+	ee.Info(("Info message3 from ephemer entry"))
+	expected = fmt.Sprint("INFO log_test.go:464 Info message3 from ephemer entry k1=v1 k1=v1 k1=v1 k1=v1 k1=v1 k1=v1\n")
+	if buff.String() != expected {
+		t.Errorf("test Persistent Entry ephemer entry: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
+	e.WithFields(Logger.F("field5Key", "field5Value"))
+	e.Info("Info message 4")
+	expected = fmt.Sprint("INFO log.go:275 Info message 4 field1Key=field1Value field2Key=field2Value field3Key=field3Value field4Key=field4Value\n")
+	if buff.String() == expected {
+		t.Errorf("test Persistent Entry to loose fields after being released: Expected '%s' Got '%s'", expected, buff.String())
+	}
+}
+
 func TestColors(t *testing.T) {
 
 	fmt.Printf("%sBlack%s\n", ansi.Black, ansi.Reset)

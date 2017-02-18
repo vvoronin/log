@@ -239,3 +239,29 @@ func HasHandlers() bool {
 func SetApplicationID(id string) {
 	Logger.SetApplicationID(id)
 }
+
+// To use like
+// logger := log.CloneWithFields(field1, field2, field3) - has to be a non-wastable entry
+// logger.Info ("message1") - must send the entry to all its chanels and wait for result, but must not to put entry back to logger's EntryPool
+// logger.WithFields(field4, field5) for Entry just add specified fields; to manipulate entry's fields use slice operations
+// logger.Info(message2) see before
+// log. ReleaseClone(logger) put used entry back to Logger's EntryPool releasing also fields
+// Create new `persistent` entry with specified fields
+func CloneWithFields(fields ...Field) *Entry {
+	entry := newEntry(InfoLevel, "", fields, skipLevel)
+	entry.Persistent = true
+
+	return entry
+}
+
+// Release `persistent` entry
+func ReleaseClone(entry *Entry) {
+	entry.Line = 0
+	entry.Persistent = false;
+	// reclaim entry + fields
+	for _, f := range entry.Fields {
+		Logger.fieldPool.Put(f)
+	}
+
+	Logger.entryPool.Put(entry)
+}
