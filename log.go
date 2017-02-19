@@ -305,14 +305,12 @@ func (l *logger) HandleEntry(e *Entry) {
 	// so, let's set it to 0 force
 	e.Line = 0
 
-	if(!e.Persistent) {
-		// reclaim entry + fields
-		for _, f := range e.Fields {
-			l.fieldPool.Put(f)
-		}
-
-		l.entryPool.Put(e)
+	// reclaim entry + fields
+	for _, f := range e.Fields {
+		l.fieldPool.Put(f)
 	}
+
+	l.entryPool.Put(e)
 }
 
 // RegisterHandler adds a new Log Handler and specifies what log levels
@@ -381,28 +379,17 @@ func (l *logger) getApplicationID() string {
 	return l.appID
 }
 
-// To use like
-// logger := log.CloneWithFields(field1, field2, field3) - has to be a non-wastable entry
-// logger.Info ("message1") - must send the entry to all its chanels and wait for result, but must not to put entry back to logger's EntryPool
-// logger.WithFields(field4, field5) for Entry just add specified fields; to manipulate entry's fields use slice operations
-// logger.Info(message2) see before
-// log. ReleaseClone(logger) put used entry back to Logger's EntryPool releasing also fields
-// Create new `persistent` entry with specified fields
-func (l *logger) CloneWithFields(fields ...Field) *Entry {
-	entry := newEntry(InfoLevel, "", fields, skipLevel)
-	entry.Persistent = true
-
-	return entry
-}
-
-// Release `persistent` entry
-func (l *logger) ReleaseClone(entry *Entry) {
-	entry.Line = 0
-	entry.Persistent = false;
-	// reclaim entry + fields
-	for _, f := range entry.Fields {
-		l.fieldPool.Put(f)
+// use as
+// myLogger := log.Clone()
+// myLogger.WithFields(log.F(`k0`, `v0`), log.F(`k1`, `v1`))
+// myLogger.Info(`info1`)
+// Expected: INFO file:line info1 k0=v0 k1=v1
+// myLogger.WithFields(log.F(`k3`, `v3`))
+// myLogger.Error(`error1`)
+// Expected: ERROR file:line info1 k0=v0 k1=v1 k2=v2
+func (l *logger) Clone() *PreparedLogger {
+	fs := make([]Field,0)
+	return &PreparedLogger{
+		fields: fs,
 	}
-
-	l.entryPool.Put(entry)
 }

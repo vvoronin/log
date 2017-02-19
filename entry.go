@@ -24,7 +24,6 @@ type Entry struct {
 	Fields        []Field   `json:"fields"`
 	File          string    `json:"file"`
 	Line          int       `json:"line"`
-	Persistent    bool
 }
 
 func newEntry(level Level, message string, fields []Field, calldepth int) *Entry {
