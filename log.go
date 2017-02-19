@@ -109,6 +109,7 @@ type LeveledLogger interface {
 	WithFields(...Field) LeveledLogger
 	WithError(error) LeveledLogger
 	StackTrace() LeveledLogger
+	Clone() *PreparedLogger
 }
 
 var _ LeveledLogger = Logger
@@ -300,6 +301,11 @@ func (l *logger) HandleEntry(e *Entry) {
 		e.wg.Wait()
 	}
 
+	// due to `if e.Line == 0 && l.callerInfoLevels[e.Level]` (see before)
+	// often wrong line appears at log output
+	// so, let's set it to 0 force
+	e.Line = 0
+
 	// reclaim entry + fields
 	for _, f := range e.Fields {
 		l.fieldPool.Put(f)
@@ -372,4 +378,19 @@ func (l *logger) HasHandlers() bool {
 
 func (l *logger) getApplicationID() string {
 	return l.appID
+}
+
+// use as
+// myLogger := log.Clone()
+// myLogger.WithFields(log.F(`k0`, `v0`), log.F(`k1`, `v1`))
+// myLogger.Info(`info1`)
+// Expected: INFO file:line info1 k0=v0 k1=v1
+// myLogger.WithFields(log.F(`k3`, `v3`))
+// myLogger.Error(`error1`)
+// Expected: ERROR file:line info1 k0=v0 k1=v1 k2=v2
+func (l *logger) Clone() *PreparedLogger {
+	fs := make([]Field,0)
+	return &PreparedLogger{
+		fields: fs,
+	}
 }

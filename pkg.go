@@ -239,3 +239,18 @@ func HasHandlers() bool {
 func SetApplicationID(id string) {
 	Logger.SetApplicationID(id)
 }
+
+// use as
+// myLogger := log.Clone()
+// myLogger.WithFields(log.F(`k0`, `v0`), log.F(`k1`, `v1`))
+// myLogger.Info(`info1`)
+// Expected: INFO file:line info1 k0=v0 k1=v1
+// myLogger.WithFields(log.F(`k3`, `v3`))
+// myLogger.Error(`error1`)
+// Expected: ERROR file:line info1 k0=v0 k1=v1 k2=v2
+func Clone() *PreparedLogger {
+	fs := make([]Field,0)
+	return &PreparedLogger{
+		fields: fs,
+	}
+}
