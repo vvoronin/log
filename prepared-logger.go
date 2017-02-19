@@ -50,7 +50,7 @@ func (pl *PreparedLogger) StackTrace() LeveledLogger {
 
 	fields := append(pl.fields, []Field{F("stack trace", string(trace[:n])+"\n")}...)
 
-	return newEntry(DebugLevel, "", fields, skipLevel+1)
+	return newEntry(DebugLevel, "", fields, skipLevel)
 
 }
 

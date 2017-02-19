@@ -42,6 +42,13 @@ func newEntry(level Level, message string, fields []Field, calldepth int) *Entry
 
 var _ LeveledLogger = new(Entry)
 
+func (e *Entry) Clone() *PreparedLogger {
+	fs := make([]Field, 0, len(e.Fields))
+	return &PreparedLogger{
+		fields: append(fs, e.Fields...),
+	}
+}
+
 // Debug level message.
 func (e *Entry) Debug(v ...interface{}) {
 	e.Level = DebugLevel

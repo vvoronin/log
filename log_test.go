@@ -427,37 +427,96 @@ func TestPrepared(t *testing.T) {
 	}
 
 	buff.Reset()
+	e.Debugf("Debugf message 1, %s, %s", `substitute1`, `substitute2`)
+	expected = fmt.Sprint("DEBUG log_test.go:430 Debugf message 1, substitute1, substitute2 field1Key=field1Value field2Key=field2Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Prepared Entry to print formatted DEBUG with fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
 	e.Info("Info message 1")
-	expected = fmt.Sprint("INFO log_test.go:430 Info message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected = fmt.Sprint("INFO log_test.go:437 Info message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print INFO with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
+	e.Infof("Infof message 1, %s, %s", `substitute1`, `substitute2`)
+	expected = fmt.Sprint("INFO log_test.go:444 Infof message 1, substitute1, substitute2 field1Key=field1Value field2Key=field2Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Prepared Entry to print formatted INFO with fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
 	e.Notice("Notice message 1")
-	expected = fmt.Sprint("NOTICE log_test.go:437 Notice message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected = fmt.Sprint("NOTICE log_test.go:451 Notice message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print NOTICE with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
+	e.Noticef("Noticef message 1, %s, %s", `substitute1`, `substitute2`)
+	expected = fmt.Sprint("NOTICE log_test.go:458 Noticef message 1, substitute1, substitute2 field1Key=field1Value field2Key=field2Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Prepared Entry to print formatted NOTICE with fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
 	e.Warn("Warn message 1")
-	expected = fmt.Sprint("WARN log_test.go:444 Warn message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected = fmt.Sprint("WARN log_test.go:465 Warn message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print WARN with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
+	e.Warnf("Warnf message 1, %s, %s", `substitute1`, `substitute2`)
+	expected = fmt.Sprint("WARN log_test.go:472 Warnf message 1, substitute1, substitute2 field1Key=field1Value field2Key=field2Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Prepared Entry to print formatted WARN with fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
 	e.Error("Error message 1")
-	expected = fmt.Sprint("ERROR log_test.go:451 Error message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected = fmt.Sprint("ERROR log_test.go:479 Error message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print ERROR with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
+	e.Errorf("Errorf message 1, %s, %s", `substitute1`, `substitute2`)
+	expected = fmt.Sprint("ERROR log_test.go:486 Errorf message 1, substitute1, substitute2 field1Key=field1Value field2Key=field2Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Prepared Entry to print formatted ERROR with fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
+	e.Trace("Trace message 1")
+	e.Info(``)
+	expected = fmt.Sprint("INFO log_test.go:494  field1Key=field1Value field2Key=field2Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Prepared Entry to print ERROR with fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
+	e.Tracef("Tracef message 1, %s, %s", `substitute1`, `substitute2`)
+	e.Info(``)
+	expected = fmt.Sprint("INFO log_test.go:502  field1Key=field1Value field2Key=field2Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Prepared Entry to print formatted Trace with fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
+	buff.Reset()
+	e.StackTrace().Info("StackTrace message 1")
+	expected = fmt.Sprint("INFO log_test.go:509 StackTrace message 1 field1Key=field1Value field2Key=field2Value stack trace=")
+	got := string(buff.Next(98))
+	if buff.Len() <= 98 || got != expected {
+		t.Errorf("test Prepared Entry to print ERROR with fields: Expected '%s...' Got '%s%s'", expected, got, buff.String())
+	}
+
+	buff.Reset()
 	e.WithFields(Logger.F("field3Key", "field3Value"))
 	e.Info("Info message 2")
-	expected = fmt.Sprint("INFO log_test.go:459 Info message 2 field1Key=field1Value field2Key=field2Value field3Key=field3Value\n")
+	expected = fmt.Sprint("INFO log_test.go:518 Info message 2 field1Key=field1Value field2Key=field2Value field3Key=field3Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to store fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
@@ -465,10 +524,20 @@ func TestPrepared(t *testing.T) {
 	buff.Reset()
 	ee := Logger.WithFields(Logger.F("k1", "v1"))
 	ee.Info(("Info message from ephemer entry"))
-	expected = fmt.Sprint("INFO log_test.go:467 Info message from ephemer entry k1=v1\n")
+	expected = fmt.Sprint("INFO log_test.go:526 Info message from ephemer entry k1=v1\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry ephemer entry: Expected '%s' Got '%s'", expected, buff.String())
 	}
+
+	buff.Reset()
+	ee = newEntry(TraceLevel, "Info message from ephemer entry", []Field{Logger.F("field4Key", "field4Value"), Logger.F("field5Key", "field5Value")}, skipLevel)
+	e = ee.Clone();
+	e.Info("Info message from PreparedLogger cloned from ephemer entry")
+	expected = fmt.Sprint("INFO log_test.go:535 Info message from PreparedLogger cloned from ephemer entry field4Key=field4Value field5Key=field5Value\n")
+	if buff.String() != expected {
+		t.Errorf("test Prepared Entry to print ERROR with fields: Expected '%s' Got '%s'", expected, buff.String())
+	}
+
 }
 
 func TestColors(t *testing.T) {

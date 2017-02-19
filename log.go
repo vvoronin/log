@@ -109,6 +109,7 @@ type LeveledLogger interface {
 	WithFields(...Field) LeveledLogger
 	WithError(error) LeveledLogger
 	StackTrace() LeveledLogger
+	Clone() *PreparedLogger
 }
 
 var _ LeveledLogger = Logger
