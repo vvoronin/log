@@ -417,39 +417,39 @@ func TestPrepared(t *testing.T) {
 	Logger.RegisterHandler(th, AllLevels...)
 
 	buff.Reset()
-	e := Logger.Clone();
+	e := Logger.Clone()
 	e.WithFields(Logger.F("field1Key", "field1Value"), Logger.F("field2Key", "field2Value"))
 
 	e.Debug("Debug message 1")
-	expected := fmt.Sprint("DEBUG prepared-logger.go:67 Debug message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected := fmt.Sprint("DEBUG log_test.go:423 Debug message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print DEBUG with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
 	e.Info("Info message 1")
-	expected = fmt.Sprint("INFO prepared-logger.go:72 Info message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected = fmt.Sprint("INFO log_test.go:430 Info message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print INFO with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
 	e.Notice("Notice message 1")
-	expected = fmt.Sprint("NOTICE prepared-logger.go:77 Notice message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected = fmt.Sprint("NOTICE log_test.go:437 Notice message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print NOTICE with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
 	e.Warn("Warn message 1")
-	expected = fmt.Sprint("WARN prepared-logger.go:82 Warn message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected = fmt.Sprint("WARN log_test.go:444 Warn message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print WARN with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
 	e.Error("Error message 1")
-	expected = fmt.Sprint("ERROR prepared-logger.go:87 Error message 1 field1Key=field1Value field2Key=field2Value\n")
+	expected = fmt.Sprint("ERROR log_test.go:451 Error message 1 field1Key=field1Value field2Key=field2Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print ERROR with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
@@ -457,7 +457,7 @@ func TestPrepared(t *testing.T) {
 	buff.Reset()
 	e.WithFields(Logger.F("field3Key", "field3Value"))
 	e.Info("Info message 2")
-	expected = fmt.Sprint("INFO prepared-logger.go:72 Info message 2 field1Key=field1Value field2Key=field2Value field3Key=field3Value\n")
+	expected = fmt.Sprint("INFO log_test.go:459 Info message 2 field1Key=field1Value field2Key=field2Value field3Key=field3Value\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to store fields: Expected '%s' Got '%s'", expected, buff.String())
 	}
@@ -468,14 +468,6 @@ func TestPrepared(t *testing.T) {
 	expected = fmt.Sprint("INFO log_test.go:467 Info message from ephemer entry k1=v1\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry ephemer entry: Expected '%s' Got '%s'", expected, buff.String())
-	}
-
-	buff.Reset()
-	e.WithFields(Logger.F("field4Key", "field4Value"))
-	e.Info("Info message 3")
-	expected = fmt.Sprint("INFO prepared-logger.go:72 Info message 3 field1Key=field1Value field2Key=field2Value field3Key=field3Value field4Key=field4Value\n")
-	if buff.String() != expected {
-		t.Errorf("test Prepared Entry to do not loose: Expected '%s' Got '%s'", expected, buff.String())
 	}
 }
 

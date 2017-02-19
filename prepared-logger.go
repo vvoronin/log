@@ -2,17 +2,16 @@ package log
 
 import (
 	"fmt"
-	"time"
 	"runtime"
+	"time"
 )
 
 type PreparedLogger struct {
 	fields []Field
 }
 
-
 func (pl *PreparedLogger) Clone() *PreparedLogger {
-	fs := make([]Field, 0)
+	fs := make([]Field, 0, len(pl.fields))
 	return &PreparedLogger{
 		fields: append(fs, pl.fields...),
 	}
@@ -20,11 +19,13 @@ func (pl *PreparedLogger) Clone() *PreparedLogger {
 
 // Trace starts a trace & returns Traceable object to End + log.
 // Example defer log.Trace(...).End()
+func copyFileds(f []Field) []Field {
+	new := make([]Field, len(f))
+	copy(new, f)
+	return new
+}
 func (pl *PreparedLogger) Trace(v ...interface{}) Traceable {
-
-	t := WithFields(pl.fields...).Trace(v...)
-
-	return t
+	return newEntry(TraceLevel, "", copyFileds(pl.fields), skipLevel+1).Trace(v...)
 }
 
 func (pl *PreparedLogger) WithFields(f ...Field) LeveledLogger {
@@ -34,13 +35,13 @@ func (pl *PreparedLogger) WithFields(f ...Field) LeveledLogger {
 
 func (pl *PreparedLogger) WithError(err error) LeveledLogger {
 
-	pl.fields = append(pl.fields, F(`err`,err))
+	pl.fields = append(pl.fields, F(`err`, err))
 	return pl
 }
 
 // StackTrace creates a new log Entry with pre-populated field with stack trace.
 func (pl *PreparedLogger) StackTrace() LeveledLogger {
-
+	StackTrace()
 	trace := make([]byte, 1<<16)
 	n := runtime.Stack(trace, true)
 	if n > stackTraceLimit {
@@ -49,14 +50,14 @@ func (pl *PreparedLogger) StackTrace() LeveledLogger {
 
 	fields := append(pl.fields, []Field{F("stack trace", string(trace[:n])+"\n")}...)
 
-	return newEntry(DebugLevel, "", fields, skipLevel)
+	return newEntry(DebugLevel, "", fields, skipLevel+1)
 
 }
 
 //Tracef(msg string, v ...interface{}) Traceable
 func (pl *PreparedLogger) Tracef(msg string, v ...interface{}) Traceable {
 	t := Logger.tracePool.Get().(*TraceEntry)
-	t.entry = newEntry(TraceLevel, fmt.Sprintf(msg, v...), pl.fields, skipLevel)
+	t.entry = newEntry(TraceLevel, fmt.Sprintf(msg, v...), pl.fields, skipLevel+1)
 	t.start = time.Now().UTC()
 
 	return t
@@ -64,27 +65,27 @@ func (pl *PreparedLogger) Tracef(msg string, v ...interface{}) Traceable {
 
 // Debug level formatted message.
 func (pl *PreparedLogger) Debug(v ...interface{}) {
-	WithFields(pl.fields...).Debug(v...)
+	newEntry(DebugLevel, "", copyFileds(pl.fields), skipLevel+1).Debug(v...)
 }
 
 // Info level formatted message.
 func (pl *PreparedLogger) Info(v ...interface{}) {
-	WithFields(pl.fields...).Info(v...)
+	newEntry(InfoLevel, "", copyFileds(pl.fields), skipLevel+1).Info(v...)
 }
 
 // Notice level formatted message.
 func (pl *PreparedLogger) Notice(v ...interface{}) {
-	WithFields(pl.fields...).Notice(v...)
+	newEntry(NoticeLevel, "", copyFileds(pl.fields), skipLevel+1).Notice(v...)
 }
 
 // Warn level formatted message.
 func (pl *PreparedLogger) Warn(v ...interface{}) {
-	WithFields(pl.fields...).Warn(v...)
+	newEntry(WarnLevel, "", copyFileds(pl.fields), skipLevel+1).Warn(v...)
 }
 
 // Error level formatted message.
 func (pl *PreparedLogger) Error(v ...interface{}) {
-	WithFields(pl.fields...).Error(v...)
+	newEntry(ErrorLevel, "", copyFileds(pl.fields), skipLevel+1).Error(v...)
 }
 
 // Panic logs an Panic level formatted message and then panics
@@ -94,50 +95,50 @@ func (pl *PreparedLogger) Panic(v ...interface{}) {
 
 // Alert logs an Alert level formatted message and then panics
 func (pl *PreparedLogger) Alert(v ...interface{}) {
-	WithFields(pl.fields...).Alert(v...)
+	newEntry(AlertLevel, "", copyFileds(pl.fields), skipLevel+1).Alert(v...)
 }
 
 // Fatal level formatted message, followed by an exit.
 func (pl *PreparedLogger) Fatal(v ...interface{}) {
-	WithFields(pl.fields...).Fatal(v...)
+	newEntry(FatalLevel, "", copyFileds(pl.fields), skipLevel+1).Fatal(v...)
 }
 
 // Debugf level formatted message.
 func (pl *PreparedLogger) Debugf(msg string, v ...interface{}) {
-	WithFields(pl.fields...).Debugf(msg, v...)
+	newEntry(DebugLevel, "", copyFileds(pl.fields), skipLevel+1).Debugf(msg, v...)
 }
 
 // Infof level formatted message.
 func (pl *PreparedLogger) Infof(msg string, v ...interface{}) {
-	WithFields(pl.fields...).Infof(msg, v...)
+	newEntry(InfoLevel, "", copyFileds(pl.fields), skipLevel+1).Infof(msg, v...)
 }
 
 // Noticef level formatted message.
 func (pl *PreparedLogger) Noticef(msg string, v ...interface{}) {
-	WithFields(pl.fields...).Noticef(msg, v...)
+	newEntry(NoticeLevel, "", copyFileds(pl.fields), skipLevel+1).Noticef(msg, v...)
 }
 
 // Warnf level formatted message.
 func (pl *PreparedLogger) Warnf(msg string, v ...interface{}) {
-	WithFields(pl.fields...).Warnf(msg, v...)
+	newEntry(WarnLevel, "", copyFileds(pl.fields), skipLevel+1).Warnf(msg, v...)
 }
 
 // Errorf level formatted message.
 func (pl *PreparedLogger) Errorf(msg string, v ...interface{}) {
-	WithFields(pl.fields...).Errorf(msg, v...)
+	newEntry(ErrorLevel, "", copyFileds(pl.fields), skipLevel+1).Errorf(msg, v...)
 }
 
 // Panicf logs an Panic level formatted message and then panics
 func (pl *PreparedLogger) Panicf(msg string, v ...interface{}) {
-	WithFields(pl.fields...).Panicf(msg, v...)
+	newEntry(PanicLevel, "", copyFileds(pl.fields), skipLevel+1).Panicf(msg, v...)
 }
 
 // Alertf logs an Alert level formatted message and then panics
 func (pl *PreparedLogger) Alertf(msg string, v ...interface{}) {
-	WithFields(pl.fields...).Alertf(msg, v...)
+	newEntry(AlertLevel, "", copyFileds(pl.fields), skipLevel+1).Alertf(msg, v...)
 }
 
 // Fatalf level formatted message, followed by an exit.
 func (pl *PreparedLogger) Fatalf(msg string, v ...interface{}) {
-	WithFields(pl.fields...).Fatalf(msg, v...)
+	newEntry(FatalLevel, "", copyFileds(pl.fields), skipLevel+1).Fatalf(msg, v...)
 }
