@@ -109,7 +109,7 @@ type LeveledLogger interface {
 	WithFields(...Field) LeveledLogger
 	WithError(error) LeveledLogger
 	StackTrace() LeveledLogger
-	CloneWithFileds(...Field) LeveledLogger
+	CloneWithFields(...Field) LeveledLogger
 }
 
 var _ LeveledLogger = Logger
@@ -388,7 +388,7 @@ func (l *logger) getApplicationID() string {
 // myLogger.WithFields(log.F(`k3`, `v3`))
 // myLogger.Error(`error1`)
 // Expected: ERROR file:line info1 k0=v0 k1=v1 k2=v2
-func (l *logger) CloneWithFileds(fs ...Field) LeveledLogger {
+func (l *logger) CloneWithFields(fs ...Field) LeveledLogger {
 	return &PreparedLogger{
 		fields: fs,
 	}

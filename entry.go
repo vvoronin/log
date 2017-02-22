@@ -42,7 +42,7 @@ func newEntry(level Level, message string, fields []Field, calldepth int) *Entry
 
 var _ LeveledLogger = new(Entry)
 
-func (e *Entry) CloneWithFileds(fs ...Field) LeveledLogger {
+func (e *Entry) CloneWithFields(fs ...Field) LeveledLogger {
 	return &PreparedLogger{
 		fields: fs,
 	}
