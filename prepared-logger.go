@@ -10,10 +10,9 @@ type PreparedLogger struct {
 	fields []Field
 }
 
-func (pl *PreparedLogger) Clone() *PreparedLogger {
-	fs := make([]Field, 0, len(pl.fields))
+func (pl *PreparedLogger) CloneWithFileds(fs ...Field) LeveledLogger {
 	return &PreparedLogger{
-		fields: append(fs, pl.fields...),
+		fields: append(pl.fields, fs...),
 	}
 }
 
@@ -29,8 +28,7 @@ func (pl *PreparedLogger) Trace(v ...interface{}) Traceable {
 }
 
 func (pl *PreparedLogger) WithFields(f ...Field) LeveledLogger {
-	pl.fields = append(pl.fields, f...)
-	return pl
+	return newEntry(InfoLevel, "", copyFileds(pl.fields), skipLevel+1).WithFields(f...)
 }
 
 func (pl *PreparedLogger) WithError(err error) LeveledLogger {

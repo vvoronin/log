@@ -417,8 +417,8 @@ func TestPrepared(t *testing.T) {
 	Logger.RegisterHandler(th, AllLevels...)
 
 	buff.Reset()
-	e := Logger.Clone()
-	e.WithFields(Logger.F("field1Key", "field1Value"), Logger.F("field2Key", "field2Value"))
+	e := Logger.CloneWithFileds(F("field1Key", "field1Value"), F("field2Key", "field2Value"))
+	//None
 
 	e.Debug("Debug message 1")
 	expected := fmt.Sprint("DEBUG log_test.go:423 Debug message 1 field1Key=field1Value field2Key=field2Value\n")
@@ -514,7 +514,7 @@ func TestPrepared(t *testing.T) {
 	}
 
 	buff.Reset()
-	e.WithFields(Logger.F("field3Key", "field3Value"))
+	e = e.CloneWithFileds(F("field3Key", "field3Value"))
 	e.Info("Info message 2")
 	expected = fmt.Sprint("INFO log_test.go:518 Info message 2 field1Key=field1Value field2Key=field2Value field3Key=field3Value\n")
 	if buff.String() != expected {
@@ -522,18 +522,18 @@ func TestPrepared(t *testing.T) {
 	}
 
 	buff.Reset()
-	ee := Logger.WithFields(Logger.F("k1", "v1"))
+	ee := e.CloneWithFileds(F("k1", "v1"))
 	ee.Info(("Info message from ephemer entry"))
-	expected = fmt.Sprint("INFO log_test.go:526 Info message from ephemer entry k1=v1\n")
+	expected = fmt.Sprint("INFO log_test.go:526 Info message from ephemer entry field1Key=field1Value field2Key=field2Value field3Key=field3Value k1=v1\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry ephemer entry: Expected '%s' Got '%s'", expected, buff.String())
 	}
 
 	buff.Reset()
 	ee = newEntry(TraceLevel, "Info message from ephemer entry", []Field{Logger.F("field4Key", "field4Value"), Logger.F("field5Key", "field5Value")}, skipLevel)
-	e = ee.Clone();
+	e = ee.CloneWithFileds()
 	e.Info("Info message from PreparedLogger cloned from ephemer entry")
-	expected = fmt.Sprint("INFO log_test.go:535 Info message from PreparedLogger cloned from ephemer entry field4Key=field4Value field5Key=field5Value\n")
+	expected = fmt.Sprint("INFO log_test.go:535 Info message from PreparedLogger cloned from ephemer entry\n")
 	if buff.String() != expected {
 		t.Errorf("test Prepared Entry to print ERROR with fields: Expected '%s' Got '%s'", expected, buff.String())
 	}

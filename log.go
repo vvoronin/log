@@ -109,7 +109,7 @@ type LeveledLogger interface {
 	WithFields(...Field) LeveledLogger
 	WithError(error) LeveledLogger
 	StackTrace() LeveledLogger
-	Clone() *PreparedLogger
+	CloneWithFileds(...Field) LeveledLogger
 }
 
 var _ LeveledLogger = Logger
@@ -254,7 +254,7 @@ func (l *logger) WithFields(fields ...Field) LeveledLogger {
 	return newEntry(InfoLevel, "", fields, skipLevel)
 }
 func (l *logger) WithError(err error) LeveledLogger {
-	return newEntry(InfoLevel, "", []Field{F(`err`,err)}, skipLevel)
+	return newEntry(InfoLevel, "", []Field{F(`err`, err)}, skipLevel)
 }
 
 // StackTrace creates a new log Entry with pre-populated field with stack trace.
@@ -388,8 +388,7 @@ func (l *logger) getApplicationID() string {
 // myLogger.WithFields(log.F(`k3`, `v3`))
 // myLogger.Error(`error1`)
 // Expected: ERROR file:line info1 k0=v0 k1=v1 k2=v2
-func (l *logger) Clone() *PreparedLogger {
-	fs := make([]Field,0)
+func (l *logger) CloneWithFileds(fs ...Field) LeveledLogger {
 	return &PreparedLogger{
 		fields: fs,
 	}
