@@ -248,8 +248,7 @@ func SetApplicationID(id string) {
 // myLogger.WithFields(log.F(`k3`, `v3`))
 // myLogger.Error(`error1`)
 // Expected: ERROR file:line info1 k0=v0 k1=v1 k2=v2
-func Clone() *PreparedLogger {
-	fs := make([]Field,0)
+func  CloneWithFields(fs ...Field) LeveledLogger {
 	return &PreparedLogger{
 		fields: fs,
 	}

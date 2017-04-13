@@ -42,10 +42,9 @@ func newEntry(level Level, message string, fields []Field, calldepth int) *Entry
 
 var _ LeveledLogger = new(Entry)
 
-func (e *Entry) Clone() *PreparedLogger {
-	fs := make([]Field, 0, len(e.Fields))
+func (e *Entry) CloneWithFields(fs ...Field) LeveledLogger {
 	return &PreparedLogger{
-		fields: append(fs, e.Fields...),
+		fields: fs,
 	}
 }
 
@@ -208,9 +207,10 @@ func (e *Entry) WithFields(fields ...Field) LeveledLogger {
 	e.Fields = append(e.Fields, fields...)
 	return e
 }
+
 // WithFields adds the provided fieldsto the current entry
 func (e *Entry) WithError(err error) LeveledLogger {
-	e.Fields = append(e.Fields, F(`err`,err))
+	e.Fields = append(e.Fields, F(`err`, err))
 	return e
 }
 
